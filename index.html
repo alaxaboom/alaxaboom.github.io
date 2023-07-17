@@ -1,1 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<title>Build Dota2</title>
 
+
+	<link rel="apple-touch-icon" sizes="57x57" href="icon/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="icon/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="icon/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="icon/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="icon/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="icon/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="icon/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="icon/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="icon/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="icon/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16x16.png">
+	<link rel="manifest" href="icon/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="icon/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+</head>
+<body>
+	<div id="main">
+		<div id="head">
+			<span style="font-size:30px;cursor:pointer; color: red;" onclick="openNav()">☰ open</span>	
+				<h1 style="color: orangered;position: relative;text-align: center;">Welcome to Dota 2 Builds</h1>
+					<h5 style="color: orangered;position: relative;text-align: center;">created by 3 students</h2>
+	</div>	
+					
+	<div id="srt">
+	<hr style="border-color: red;">
+	
+	<img src="atributes/icon-str.png"; align="left">
+	<p style="color: orangered;position: relative; left;">Сила/Strenght</p>
+	<hr style="border-color: red;">
+
+
+	<a class="hero" href="https://dg-star.github.io/hero/abaddon/index.html" title="" alt="Abaddon"><img src="image hero/abaddon.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/alchemist/index.html" title="" alt="Alchemist"><img src="image hero/alchemist.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/axe/index.html" title="" alt="Axe"><img src="image hero/axe.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/beastmaster/index.html" title="" alt="Beastmaster"><img src="image hero/beastmaster.png" alt=""></a>
+
+	</div>
+
+
+	<div id="agl">
+	<img src="atributes/icon-agi.png"; align="left">
+	<p style="color: orangered;position: relative; left;">Ловкость/Agility</p>
+	<hr style="border-color: red;">
+	<a class="hero" href="https://dg-star.github.io/hero/am/index.html" title="" alt="Anti-Mage"><img src="image hero/am.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/arc/index.html" title="" alt="Arc Warden"><img src="image hero/arc.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/bs/index.html" title="" alt="Bloodseeker"><img src="image hero/bs.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/bh/index.html" title="" alt="Bounty Hunter"><img src="image hero/bh.png" alt=""></a>
+
+	</div>
+
+	<div id="int">
+	<img src="atributes/icon-int.png"; align="left">
+	<p style="color: orangered;position: relative; left;">Интеллект/Intelligence</p>
+	<hr style="border-color: red;">
+	<a class="hero" href="https://dg-star.github.io/hero/app/index.html" title="" alt="Antient Apparation"><img src="image hero/app.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/bane/index.html" title="" alt="Bane"><img src="image hero/bane.png" alt=""></a>
+	<a class="hero" href="https://dg-star.github.io/hero/bat/index.html" title="" alt="Batrider"><img src="image hero/bat.png" alt=""></a>
+
+	</div>
+
+	<div id="under">
+		<a href="https://dota2.ru">  <img src="int.png" align="right"></a>
+			<br>
+			<br>
+		<a href="https://ci.nsu.ru">  <img src="vki.png" align="left"></a>
+	</div>
+
+	<div id="mySidenav" class="sidenav">
+  		<a style="color: red;" href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+  		<a href="https://dota2.ru">Dota 2.ru</a>
+  		<a href="https://ci.nsu.ru">VKI NSU</a>
+  		<a href="https://www.donationalerts.com/r/dota_2_builds_">Support us</a>
+  		<a href="https://dg-star.github.io/contact/contact.html">Contact</a>
+	</div>
+</div>
+
+<script>
+	function openNav() {
+    	document.getElementById("mySidenav").style.width = "250px";
+    	document.getElementById("main").style.marginLeft = "250px";
+    	document.body.style.backgroundColor = "rgba(0,0,0,0.5)";
+	}
+
+	function closeNav() {
+    	document.getElementById("mySidenav").style.width = "0";
+    	document.getElementById("main").style.marginLeft= "0";
+    	document.body.style.backgroundColor = "white";
+	}
+</script>
+</div>
+</body>
+</html>
