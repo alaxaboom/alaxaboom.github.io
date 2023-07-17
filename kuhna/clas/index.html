@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Abaddon Builds</title>
+
+
+	<link rel="apple-touch-icon" sizes="57x57" href="icon/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="icon/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="icon/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="icon/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="icon/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="icon/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="icon/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="icon/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="icon/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="icon/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="icon/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16x16.png">
+	<link rel="manifest" href="icon/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="icon/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+<style>
+body,html{ height: 100%; color: lightblue; font-family: Arial;margin: 0;}
+@media (min-width: 0px) {body {background: url(bgmobile.png);}}
+
+@media (min-width: 576px) {body {background: url(bgsm.png);}}
+
+@media (min-width: 768px) {body {background: url(bgmd.png);}}
+
+@media (min-width: 992px) {body {background: url(bglg.png);}}
+
+@media (min-width: 1200px) {body{background: url(bg.png);}}
+
+body{background-size: cover;background-position: center center;background-attachment: fixed;}
+
+.item {text-align: center;display: inline-block;overflow: hidden;position: relative;text-decoration: none;}
+
+.item:before {display: block;background-color: rgb(0, 0, 0);content: "";height: 100%;opacity: 0;position: absolute;width: 100%;z-index: 2;}
+
+.item:after {font-family: 'Lucida Console';color: white;content: attr(alt);display: block;font-size: 16px;opacity: 0;padding: 0 3%;position: absolute;text-transform: none;top: 50%;-webkit-transform-origin: 50% 0%;transform-origin: 50% 0%;-webkit-transform: scale(0) translateY(-50%);transform: scale(0) translateY(-50%);width: 94%;z-index: 3;}
+
+.item img {border: none;display: block;z-index: 1;}
+
+.item:after {-webkit-transition: all 350ms ease-in-out;transition: all 350ms ease-in-out;}
+
+.item:hover:before {opacity: 0.6;}
+
+.item:hover:after {opacity: 1;-webkit-transform: scale(1) translateY(-50%);transform: scale(1) translateY(-60%);}
+
+
+.hr{
+	border-color: blue;
+}
+
+.skillicon{
+	border-radius: 10px;
+}
+
+::-webkit-scrollbar{
+	width: 0;
+}
+
+.undertext{
+	font-size: 15px;
+	font-family: Arial;
+	color: gray;
+	opacity: 0.8;
+}
+
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidenav a:hover {
+    color: #f1f1f1;
+}
+
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+#main {
+    transition: margin-left .5s;
+    widht: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+</style>
+	
+</head>
+<body>
+	<div id="main">
+	<span style="font-size:30px;cursor:pointer; color: lightblue;" onclick="openNav()">☰ open</span>	
+	<h1 style="position: relative;text-align: center;">Dota 2 Builds</h1>
+	<hr class="hr">
+	<h2 style="position: relative;text-align: left;">Abaddon</h2>
+	<hr class="hr">
+	<span style="font-size: 20px">Род Аверно питает купель — разлом в земной тверди, который испускает загадочную энергию на протяжении поколений. Каждого новорожденного семьи окунают в этот темный туман, даруя тем самым связь с их землей и ее загадочной силой. Дети растут с непреклонной верой в защиту семейных ценностей и традиций земли, но на самом деле они охраняют саму купель, истинные намерения которой неизвестны. Когда новорожденный Abaddon проходил обряд крещения, что-то пошло не так. В глазах малыша сверкнула искра разума, испугавшая всех присутствовавших и заставившая жрецов шептаться. Его растили, дабы он пошел по пути всех отпрысков рода: война и защита родины во главе армии. Но сам Abaddon уделял этому не так много внимания. Пока другие тренировались в обращении с оружием, он медитировал у купели. Он глубоко вдыхал темный туман, учась быть единым с той силой, что протекала глубоко под землей его дома. В конечном счете он стал порождением черного тумана. Род Аверно неодобрительно отнесся к такому решению, обвиняя его в пренебрежении обязанностями. Но все эти обвинения прекратились, когда Abaddon вступил в свою первую битву и показал ту обретенную власть над жизнью и смертью, о которой другие члены рода не могли и мечтать.</span>	
+	<hr class="hr">
+	<h2 style="position: relative;">Способности/Abulities</h2>
+	<hr class="hr">
+	<h2 style="position: relative;text-align: center;">Mist Coil</h2>	
+	<img class="skillicon" src="Coil.png" align="left" alt="img">
+	<span>Ценой собственного здоровья выпускает смертельный туман, который наносит урон врагу или лечит союзника.</span>
+	<br><br>
+	<img src="mana.png" alt="img" align="left"><div style="position: relative; left; font-size: 20px; float: left; width: 50%">Расход маны: 50</div>
+	<img src="cooldown.png" alt="img" align="left"><div style="position: relative; left; font-size: 20px">Перезарядка: 5,5</div>
+	<br><br>
+	<p style="line-height: 0.2em;"><b>Способность: </b>направленная на юнита</p>
+	<p style="line-height: 0.2em;"><b>Действует на: </b>союзников/врагов</p>
+	<p><b>Тип урона: </b>магический/чистый/мгновенная атака (с Aghanim's Shard)</p>
+	<br>
+	<p style="line-height: 0.2em;"><b>Дальность применения: </b>575</p>
+	<p style="line-height: 0.2em;"><b>Урон по себе: </b>50%</p>
+	<p style="line-height: 0.2em;"><b>Урон: </b>110/160/210/260 (<b>Талант:  </b>160/210/260/310)</p></p>
+	<p style="line-height: 0.2em;"><b>Лечение: </b>110/160/210/260 (<b>Талант:  </b>160/210/260/310)</p></p>
+	<p style="line-height: 0.2em;"><b>Радиус: </b>0 (<b>Талант:  </b> 400)</p></p>
+	<span class="undertext">Дыхание лорда Аверно преисполнено загадочными испарениями купели, подчиняющимися его воле.</span>
+
+
+
+	<hr class="hr">
+	<h2 style="position: relative;text-align: center;">Aphotic Shield</h2>	
+	<img class="skillicon" src="shield.png" align="left" alt="img">
+	<span>Окружает союзника щитом из тёмной энергии, который поглощает некоторое количество урона. Если щит пропадёт или его уничтожат, он взорвётся и нанесёт врагам вокруг урон, равный здоровью щита. Применение снимает с цели оглушение и большинство отрицательных эффектов.</span>
+	<br><br>
+	<img src="mana.png" alt="img" align="left"><div style="position: relative; left; font-size: 20px; float: left; width: 50%">Расход маны: 85/100/115/130</div>
+	<img src="cooldown.png" alt="img" align="left"><div style="position: relative; left; font-size: 20px">Перезарядка: 12/10/8/6</div>
+	<br><br><br>
+	<p style="line-height: 0.2em;"><b>Способность: </b>направленная на юнита</p>
+	<p style="line-height: 0.2em;"><b>Действует на: </b>союзников/врагов</p>
+	<p style="line-height: 0.2em;"><b>Тип урона: </b>магический</p>
+	<br>
+	<p style="line-height: 0.2em;"><b>Дальность применения: </b>550</p>
+	<p style="line-height: 0.2em;"><b>Радиус взрыва: </b>675</p>
+	<p><b>Поглощение урона: </b>110/140/170/200 (<b>Талант:  </b>210/240/270/300)</p></p>
+	<p><b>Урон по области: </b>110/140/170/200 (<b>Талант:  </b>210/240/270/300)</p></p>
+	<p style="line-height: 0.2em;"><b>Длительность: </b>15</p>
+	<span class="undertext">Сила черного тумана поглощает удары так же, как он сам поглощает дневной свет.</span>
+	<hr style="border-color: blue;">
+
+
+
+	<h2 style="position: relative;text-align: center;">Curse of Avernus</h2>	
+	<img class="skillicon" src="curse.png" align="left" alt="img">
+	<span>Атаки героя замедляют передвижение жертвы. Если атаковать врага 4 раза, на него сработает замораживающее проклятие: оно накладывает безмолвие и замедление, а все атакующие этого врага существа получают дополнительную скорость атаки.</span>
+	<br><br><br><br><br><br>
+	<p style="line-height: 0.2em;"><b>Способность: </b>Пассивная</p>
+	<p style="line-height: 0.2em;"><b>Действует на: </b>союзников/врагов</p>
+	<br>
+	<p><b>Ударов нужно: </b>4 (<b>Талант:  </b>3)</p></p>
+	<p><b>Базовое замедление скорости передвижения: </b>10%/15%/20%/25%</p>
+	<br>
+	<p><b>Замедление скорости передвижения: </b>15%/30%/45%/60% (<b>Талант:  </b>30%/45%/60%/75%)</p></p>
+	<p style="line-height: 0.2em;"><b>Доп. скорость атаки: </b>40/60/80/100</p>
+	<p style="line-height: 0.2em;"><b>Базовая длительность: </b>5</p>
+	<p style="line-height: 0.2em;"><b>Длительность проклятья: </b>4,5</p>
+	<p style="line-height: 0.2em;"><b>Длительность ускорения: </b>4</p>
+	<span class="undertext">Крещёные в купели черпают из неё силы, но остальных дары Аверно смертельно изнуряют.</span>
+	<hr class="hr">
+
+
+
+	<h2 style="position: relative;text-align: center;">Borrowed Time</h2>	
+	<img class="skillicon" src="time.png" align="left" alt="img">
+	<span>Обращает весь получаемый урон в лечение. Применение снимает большинство отрицательных эффектов. Если способность готова, то она сработает автоматически, как только здоровье владельца упадёт ниже 400.</span>
+	<br><br>
+	<img src="cooldown.png" alt="img" align="left"><div style="position: relative; left; font-size: 20px">Перезарядка:  60/50/40 (Талант: 52/42/32)</div>
+	<br><br><br>
+	<p><b>Способность: </b>ненаправленная/аура (с Aghanim's Scepter)</p>
+	<p style="line-height: 0.2em;"><b>Действует на: </b>себя/союзников (с Aghanim's Scepter)</p>
+	<p style="line-height: 0.2em;"><b>Порог здоровья: </b>400</p>
+	<p style="line-height: 0.2em;"><b>Длительность: </b>4/5/6</p>
+	<br>
+	<span class="undertext">Эта сила, самая противоестественная из всех даров купели Аверно, бросает вызов пониманию смертных. Что должно ранить — лечит, а что должно убить — дает свежие силы.</span>
+	<hr class="hr">
+	<h2 style="position: relative;text-align: left;">Сборка/Builds</h2>
+	<h3>Начальный закуп:</h3>
+	<a class="item" href="https://dota2.ru/items/tango/" title="" alt="Tango"><img src="item/tango.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/healing-salve/" alt="Healing Salve"><img src="item/flask.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/quelling-blade/" title="" alt="Quelling Blade"><img src="item/blade.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/gauntlets-of-strength/" title="" alt="Gauntlets"><img src="item/gauntlets.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/iron-branch/" title="" alt="Iron Branch"><img src="item/branches.png" alt=""></a>
+	<h3>Основные предметы:</h3>
+	<a class="item" href="https://dota2.ru/items/phase-boots/" title="" alt="Phase Boots"><img src="item/phase.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/echo-sabre/" title="" alt="Echo Sabre"><img src="item/sabre.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/aghanims-shard/" title="" alt="Aghanim's Shard"><img src="item/shard.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/abyssal-blade/" title="" alt="Abyssal Blade"><img src="item/abyssal.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/black-king-bar/" title="" alt="Black King Bar"><img src="item/bkb.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/assault-cuirass/" title="" alt="Assault Cuirass"><img src="item/assault.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/satanic/" title="" alt="Satanic"><img src="item/satanic.png" alt=""></a>
+	
+	
+	<h3>YOUTUBE:GREYSHARK</h3>
+	<a class="item" href="https://dota2.ru/items/tome-of-knowledge/" title="" alt="Tome of Knowledge"><img src="item/tome.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/tome-of-knowledge/" title="" alt="Tome of Knowledge"><img src="item/tome.png" alt=""></a>
+	<a class="item" href="https://dota2.ru/items/tome-of-knowledge/" title="" alt="Tome of Knowledge"><img src="item/tome.png" alt=""></a>
+	<br>
+	<a style="font-size: 25px; text-decoration: none; color: lightblue; text-align: left" href="https://www.youtube.com/@greyshark_official" >YOUTUBE:GREYSHARK</a>
+	<br>
+	<a style="font-size: 25px; text-decoration: none; color: lightblue;align: right;" href="https://steamcommunity.com/sharedfiles/filedetails/?id=2882612655&searchtext=abaddon" >ИСПОЛЬЗОВАТЬ ЭТОТ ИМБА БИЛД</a>
+	<hr class="hr">
+	<a href="https://dota2.ru">  <img src="int.png" align="right"></a>
+	<br>
+	<br>
+	<a href="https://ci.nsu.ru">  <img src="vki.png" align="left"></a>
+	</div>
+	<div id="mySidenav" class="sidenav">
+  		<a style="color: lightblue;" href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+  		<a href="https://dg-star.github.io">Main Menu</a>
+  		<a href="https://dota2.ru">Dota 2.ru</a>
+  		<a href="https://ci.nsu.ru">VKI NSU</a>
+  		<a href="#">Support us</a>
+  		<a href="https://dg-star.github.io/contact/contact.html">Contact</a>
+	</div>
+	
+</div>
+
+<script>
+	function openNav() {
+    	document.getElementById("mySidenav").style.width = "250px";
+    	document.getElementById("main").style.marginLeft = "250px";
+    	document.body.style.backgroundColor = "rgba(0,0,0,0.5)";
+	}
+
+	function closeNav() {
+    	document.getElementById("mySidenav").style.width = "0";
+    	document.getElementById("main").style.marginLeft= "0";
+    	document.body.style.backgroundColor = "white";
+	}
+</script>
+</div>
+</body>		
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
