@@ -1,0 +1,29 @@
+.tier-image-container {
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: 80px; /* Уменьшаем ширину контейнера */
+    height: 80px; /* Уменьшаем высоту контейнера */
+    margin: 5px; /* Добавляем отступы между элементами */
+}
+
+.tier-image {
+    width: 100%; /* Занимает всю ширину контейнера */
+    height: 100%; /* Занимает всю высоту контейнера */
+    object-fit: cover; /* Сохраняет пропорции изображения */
+    border-radius: 8px;
+    border: 2px solid #ccc;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    text-align: center;
+    padding: 5px;
+    border-radius: 0 0 8px 8px;
+    font-size: 12px;
+}

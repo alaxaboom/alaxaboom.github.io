@@ -1,0 +1,46 @@
+.tier-category {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+  }
+  
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .category-title {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+    flex-grow: 1; /* Название категории занимает все доступное пространство слева */
+  }
+  
+  .category-actions {
+    display: flex;
+    gap: 10px; /* Расстояние между кнопками */
+  }
+  
+  .edit-button, .delete-button, .move-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    transition: opacity 0.2s;
+  }
+  
+  .edit-button:hover, .delete-button:hover, .move-button:hover {
+    opacity: 0.7;
+  }
+  
+  .tier-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+  }
