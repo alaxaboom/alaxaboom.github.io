@@ -43,7 +43,7 @@ const ImageUpload = ({ onImageUpload }) => {
 
       try {
         // Загружаем файл в Supabase Storage
-        const { data, error } = await supabase.storage
+        const {  error } = await supabase.storage
           .from('images') // Указываем bucket (папку)
           .upload(`public/${sanitizedFileName}`, image); // Указываем путь и файл
 

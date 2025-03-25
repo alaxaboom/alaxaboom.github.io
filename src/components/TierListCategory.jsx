@@ -13,14 +13,9 @@ const TierListCategory = ({
   onMoveUp,
   onMoveDown,
 }) => {
-  const [{ isOver }, drop] = useDrop({
+  const [, drop] = useDrop({
     accept: 'image',
-    drop: (item) => {
-      onDrop(item, category.id);
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
+    drop: (item) => onDrop(item, category.id),
   });
 
   const moveItem = (fromIndex, toIndex) => {
@@ -33,7 +28,7 @@ const TierListCategory = ({
   return (
     <div ref={drop} className="tier-category" style={{ backgroundColor: category.color }}>
       <div className="category-header">
-        <h2 className="category-title">{category.name}</h2>
+        <h2 className="category-text">{category.name}</h2>
         <div className="category-actions">
           <button className="edit-button" onClick={() => onEdit(category)}>✏️</button>
           <button className="delete-button" onClick={() => onDelete(category.id)}>🗑️</button>

@@ -1,0 +1,167 @@
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.input:focus {
+  border-color: #007bff;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.search {
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.searchInput:focus {
+  border-color: #007bff;
+}
+
+.radioButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.radioButton {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  background-color: #fff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.radioButton:hover {
+  transform: translateY(-2px);
+}
+
+.radioButton.passed {
+  background-color: #e8f5e9; /* Светло-зеленый */
+}
+
+.radioButton.not_passed {
+  background-color: #ffebee; /* Светло-красный */
+}
+
+.radioButton.in_progress {
+  background-color: #fff3e0; /* Светло-оранжевый */
+}
+
+.radioButton.passed_but_more {
+  background-color: #f3e5f5; /* Светло-фиолетовый */
+}
+
+.linkList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 5px;
+}
+
+.linkItem {
+  position: static;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+  background-color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 220px;
+  width: 250px;
+}
+
+.linkItem:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.deleteButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background-color: #ff4d4d;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+  z-index: 1;
+}
+
+.deleteButton:hover {
+  background-color: #ff1a1a;
+}
+
+.categorySelect {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.categorySelect:hover {
+  border-color: #007bff;
+}
+
+.errorMessage {
+  color: red;
+  margin-top: 10px;
+}

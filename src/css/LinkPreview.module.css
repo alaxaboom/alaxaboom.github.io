@@ -1,0 +1,52 @@
+.preview {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .imageContainer {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+  }
+  
+  .image:hover {
+    opacity: 0.9;
+  }
+  
+  .imagePlaceholder {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .text {
+    font-size: 18px;
+    margin: 10px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .description {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  

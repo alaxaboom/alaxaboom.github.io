@@ -5,7 +5,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import Main from './Main';
 import TierList from './TierList';
 import CreateElement from './CreateElement';
-import LinkManager from './LinkManager'; // Новый компонент для управления ссылками
+import LinkManager from './LinkManager';
+import AltMain from './AltMain';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
   return (
@@ -13,9 +15,10 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Main />} />
-          <Route path="/tierlist" element={<TierList />} />
-          <Route path="/create" element={<CreateElement />} />
-          <Route path="/links" element={<LinkManager />} /> {/* Новый маршрут */}
+          <Route path="/altMain" element={<AltMain />} />
+          <Route path="/tierlist" element={<ProtectedRoute><TierList /></ProtectedRoute>} />
+          <Route path="/create" element={<ProtectedRoute><CreateElement /></ProtectedRoute>} />
+          <Route path="/links" element={<ProtectedRoute><LinkManager /></ProtectedRoute>} />
         </Routes>
       </Router>
     </DndProvider>

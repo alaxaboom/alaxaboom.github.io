@@ -1,53 +1,72 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import '../css/DraggableImage.css';
 
-const DraggableImage = ({ id, imageUrl, text, index, moveItem,category_id }) => {
-    const ref = useRef(null);
+const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) => {
+  const ref = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDraggingState, setIsDraggingState] = useState(false);
 
-    const [, drop] = useDrop({
-        accept: 'image',
-        hover: (item, monitor) => {
-            if (!ref.current) return;
+  const [{ isDragging }, drag] = useDrag({
+    type: 'image',
+    item: () => {
+      setIsDraggingState(true);
+      return { id, index, category_id, imageUrl, text };
+    },
+    end: () => setIsDraggingState(false),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
 
-            const dragIndex = item.index;
-            const hoverIndex = index;
+  const [, drop] = useDrop({
+    accept: 'image',
+    hover: (item, monitor) => {
+      if (!ref.current || !moveItem) return;
+      
+      const dragIndex = item.index;
+      const hoverIndex = index;
 
-            // Не делать ничего, если элемент находится над собой
-            if (dragIndex === hoverIndex) return;
+      if (dragIndex === hoverIndex) return;
 
-            // Определяем прямоугольник элемента
-            const hoverBoundingRect = ref.current.getBoundingClientRect();
-            const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
-            const clientOffset = monitor.getClientOffset();
-            const hoverClientX = clientOffset.x - hoverBoundingRect.left;
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
-            // Перемещаем элемент только если курсор пересек половину ширины элемента
-            if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) return;
-            if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) return;
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
-            // Вызываем moveItem для обновления порядка
-            moveItem(dragIndex, hoverIndex);
-            item.index = hoverIndex;
-        },
-    });
+      moveItem(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
 
-    const [{ isDragging }, drag] = useDrag({
-        type: 'image',
-        item: { id, index,category_id },
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
-        }),
-    });
+  drag(drop(ref));
 
-    drag(drop(ref));
-
-    return (
-        <div ref={ref} className="tier-image-container" style={{ opacity: isDragging ? 0.5 : 1 }}>
-            <img src={imageUrl} alt="Tier item" className="tier-image" />
-            <div className="tooltip">{text}</div>
-        </div>
-    );
+  return (
+    <div 
+      ref={ref}
+      className={`draggable-image-container ${isDragging ? 'dragging' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ opacity: isDragging ? 0.8 : 1 }}
+    >
+      <div className="image-wrapper">
+        <img 
+          src={imageUrl} 
+          alt="Tier item" 
+          className="draggable-image" 
+          draggable="false"
+        />
+        {(isHovered || isDraggingState) && text && (
+          <div className="image-text-overlay">
+            {text}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default DraggableImage;
