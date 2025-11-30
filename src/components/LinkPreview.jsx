@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styles from '../css/LinkPreview.module.css'; // Импорт стилей как модуля
+import styles from '../css/LinkPreview.module.css';
+import { fetchLinkPreview } from '../utils/linkPreviewService';
 
 const LinkPreview = ({ url }) => {
   const [previewData, setPreviewData] = useState(null);
@@ -11,33 +12,17 @@ const LinkPreview = ({ url }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const cachedData = localStorage.getItem(`preview-${url}`);
-        if (cachedData) {
-          setPreviewData(JSON.parse(cachedData));
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-        if (!response.ok) throw new Error('Ошибка загрузки данных');
-
-        const data = await response.json();
-        const html = data.contents;
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        const text = doc.querySelector('text')?.textContent || '';
-        const description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
-        const image = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
-
-        const previewData = { text, description, image, url };
+        const previewData = await fetchLinkPreview(url);
         setPreviewData(previewData);
         setLoading(false);
-
-        localStorage.setItem(`preview-${url}`, JSON.stringify(previewData));
       } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
+        setPreviewData({
+          text: url,
+          description: '',
+          image: '',
+          url
+        });
         setError('Не удалось загрузить предпросмотр ссылки.');
         setLoading(false);
       }
@@ -52,7 +37,10 @@ const LinkPreview = ({ url }) => {
       img.src = previewData.image;
 
       const timeout = setTimeout(() => {
-        if (!imageLoaded) setImageLoaded(false);
+        setImageLoaded((prev) => {
+          if (!prev) return false;
+          return prev;
+        });
       }, 5000);
 
       img.onload = () => {

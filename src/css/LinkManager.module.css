@@ -110,7 +110,7 @@
 }
 
 .linkItem {
-  position: static;
+  position: relative;
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 10px;
@@ -136,8 +136,15 @@
   color: white;
   cursor: pointer;
   font-size: 12px;
-  transition: background-color 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
   z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.linkItem:hover .deleteButton {
+  opacity: 1;
+  visibility: visible;
 }
 
 .deleteButton:hover {
@@ -155,6 +162,14 @@
   font-size: 12px;
   cursor: pointer;
   z-index: 1;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.linkItem:hover .categorySelect {
+  opacity: 1;
+  visibility: visible;
 }
 
 .categorySelect:hover {

@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import '../css/DraggableImage.css';
 
 const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) => {
@@ -7,7 +8,7 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
   const [isHovered, setIsHovered] = useState(false);
   const [isDraggingState, setIsDraggingState] = useState(false);
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag, preview] = useDrag({
     type: 'image',
     item: () => {
       setIsDraggingState(true);
@@ -19,10 +20,17 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
     }),
   });
 
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true });
+  }, [preview]);
+
   const [, drop] = useDrop({
     accept: 'image',
     hover: (item, monitor) => {
       if (!ref.current || !moveItem) return;
+      
+      // Проверяем, что элемент из той же категории
+      if (item.category_id !== category_id) return;
       
       const dragIndex = item.index;
       const hoverIndex = index;
@@ -30,12 +38,13 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
       if (dragIndex === hoverIndex) return;
 
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
       const clientOffset = monitor.getClientOffset();
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      if (!clientOffset) return;
+      const hoverClientX = clientOffset.x - hoverBoundingRect.left;
 
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+      if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) return;
+      if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) return;
 
       moveItem(dragIndex, hoverIndex);
       item.index = hoverIndex;
@@ -50,15 +59,24 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
       className={`draggable-image-container ${isDragging ? 'dragging' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ opacity: isDragging ? 0.8 : 1 }}
+      style={{ opacity: isDragging ? 0 : 1 }}
     >
       <div className="image-wrapper">
-        <img 
-          src={imageUrl} 
-          alt="Tier item" 
-          className="draggable-image" 
-          draggable="false"
-        />
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt="Tier item" 
+            className="draggable-image" 
+            draggable="false"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="draggable-image-placeholder">
+            No Image
+          </div>
+        )}
         {(isHovered || isDraggingState) && text && (
           <div className="image-text-overlay">
             {text}

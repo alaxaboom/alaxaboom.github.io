@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import DraggableImage from './DraggableImage';
 import '../css/TierListCategory.css';
@@ -8,20 +8,52 @@ const TierListCategory = ({
   items,
   onDrop,
   onMove,
+  onSaveOrder,
   onDelete,
   onEdit,
   onMoveUp,
   onMoveDown,
 }) => {
+  const [currentItems, setCurrentItems] = useState(items);
+  const currentItemsRef = useRef(items);
+  const saveOrderTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    setCurrentItems(items);
+    currentItemsRef.current = items;
+  }, [items]);
+
   const [, drop] = useDrop({
     accept: 'image',
-    drop: (item) => onDrop(item, category.id),
+    drop: (item, monitor) => {
+      console.log('Drop в категории:', category.id, 'item:', item);
+      if (item.category_id === category.id) {
+        // Drop внутри той же категории - сохраняем порядок через небольшую задержку
+        // чтобы убедиться, что все обновления состояния завершены
+        if (saveOrderTimeoutRef.current) {
+          clearTimeout(saveOrderTimeoutRef.current);
+        }
+        saveOrderTimeoutRef.current = setTimeout(() => {
+          const itemsToSave = currentItemsRef.current;
+          console.log('Drop внутри категории, сохраняем порядок:', itemsToSave.map((it, idx) => ({ id: it.id, order: idx })));
+          if (onSaveOrder && itemsToSave.length > 0) {
+            onSaveOrder(category.id, itemsToSave);
+          }
+        }, 100);
+      } else {
+        // Drop из другой категории
+        console.log('Drop из другой категории');
+        onDrop(item, category.id);
+      }
+    },
   });
 
   const moveItem = (fromIndex, toIndex) => {
-    const updatedItems = [...items];
+    const updatedItems = [...currentItems];
     const [movedItem] = updatedItems.splice(fromIndex, 1);
     updatedItems.splice(toIndex, 0, movedItem);
+    setCurrentItems(updatedItems);
+    currentItemsRef.current = updatedItems; // Обновляем ref синхронно
     onMove(category.id, updatedItems);
   };
 
@@ -37,7 +69,7 @@ const TierListCategory = ({
         </div>
       </div>
       <div className="tier-items">
-        {items.map((item, index) => (
+        {currentItems.map((item, index) => (
           <DraggableImage
             key={item.id}
             id={item.id}

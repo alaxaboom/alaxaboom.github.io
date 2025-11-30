@@ -1,29 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from '../supabase';
+import { fetchCategories, createCategory } from '../api/categoryService';
 
 const CategoryManager = ({ onCategoryUpdate }) => {
   const [categories, setCategories] = useState([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#FFFFFF');
 
-  // Мемоизируем fetchCategories
-  const fetchCategories = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*');
-
-    if (error) {
+  const loadCategories = useCallback(async () => {
+    try {
+      const data = await fetchCategories();
+      setCategories(data);
+      onCategoryUpdate(data);
+    } catch (error) {
       console.error('Ошибка загрузки категорий:', error.message);
-      return;
     }
-
-    setCategories(data);
-    onCategoryUpdate(data);
   }, [onCategoryUpdate]);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    loadCategories();
+  }, [loadCategories]);
 
   const addCategory = async () => {
     if (!newCategoryName.trim()) {
@@ -34,19 +29,17 @@ const CategoryManager = ({ onCategoryUpdate }) => {
     try {
       const order = categories.length;
 
-      const { data, error } = await supabase
-        .from('categories')
-        .insert([{ name: newCategoryName, color: newCategoryColor, order }])
-        .select();
+      const newCategory = await createCategory({
+        method: 'create',
+        name: newCategoryName,
+        color: newCategoryColor,
+        order
+      });
 
-      if (error) {
-        throw error;
-      }
-
-      setCategories([...categories, data[0]]);
+      setCategories([...categories, newCategory]);
       setNewCategoryName('');
       setNewCategoryColor('#FFFFFF');
-      fetchCategories();
+      loadCategories();
     } catch (error) {
       console.error('Ошибка добавления категории:', error.message);
     }

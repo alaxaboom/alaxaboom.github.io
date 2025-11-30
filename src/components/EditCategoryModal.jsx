@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import '../css/EditCategoryModal.css';
 
-const EditCategoryModal = ({ category, onClose, onSave }) => {
+const EditCategoryModal = ({ category, onClose, onSave, categories }) => {
   const [name, setName] = useState(category.name);
   const [color, setColor] = useState(category.color);
+  const [order, setOrder] = useState(category.order);
 
   const handleSave = () => {
-    onSave({ ...category, name, color });
+    onSave({ ...category, name, color, order: Number(order) });
     onClose();
   };
 
@@ -28,6 +29,16 @@ const EditCategoryModal = ({ category, onClose, onSave }) => {
             type="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>Порядок:</label>
+          <input
+            type="number"
+            min="0"
+            max={categories ? categories.length - 1 : 0}
+            value={order}
+            onChange={(e) => setOrder(e.target.value)}
           />
         </div>
         <div className="modal-actions">

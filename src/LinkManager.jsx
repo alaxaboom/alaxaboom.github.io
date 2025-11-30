@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import supabase from './supabase';
+import { fetchLinks, createLink, updateLink, deleteLink } from './api/linkService';
+import { fetchLinkPreview } from './utils/linkPreviewService';
 import LinkPreview from './components/LinkPreview';
 import styles from './css/LinkManager.module.css';
 
@@ -19,14 +20,27 @@ const LinkManager = () => {
   }, []);
 
   useEffect(() => {
-    const fetchLinks = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('Links')
-          .select('*')
-          .order('created_at', { ascending: false });
+    const loadLinks = async () => {
+      setLoading(true);
+      const fetchWithRetry = async (retries = 5, delay = 1000) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const data = await fetchLinks();
+            if (!Array.isArray(data)) {
+              throw new Error('Invalid data format');
+            }
+            return data;
+          } catch (error) {
+            if (i === retries - 1) {
+              throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+          }
+        }
+      };
 
-        if (error) throw error;
+      try {
+        const data = await fetchWithRetry();
         setLinks(data);
       } catch (error) {
         console.error('Ошибка загрузки ссылок:', error.message);
@@ -36,8 +50,15 @@ const LinkManager = () => {
       }
     };
 
-    fetchLinks();
+    loadLinks();
   }, []);
+
+  const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
 
   const handleSaveLink = async () => {
     if (!url.trim()) {
@@ -55,75 +76,76 @@ const LinkManager = () => {
     setError('');
 
     try {
-      // Сохраняем базовую информацию без метаданных
-      const { data: linkData, error: linkError } = await supabase
-        .from('Links')
-        .insert([{ 
-          url, 
-          text: url, // Временно используем URL как текст
-          category,
-          created_at: new Date()
-        }])
-        .select();
-
-      if (linkError) throw linkError;
-
-      // Пытаемся получить метаданные (в фоне, без блокировки интерфейса)
-      try {
-        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-        if (response.ok) {
-          const html = await response.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          
-          const title = doc.querySelector('title')?.textContent || url;
-          const image = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || '';
-
-          // Обновляем запись в Links
-          await supabase
-            .from('Links')
-            .update({ text: title })
-            .eq('id', linkData[0].id);
-
-          // Добавляем в tierListItems если есть изображение
-          if (image) {
-            await supabase
-              .from('tierListItems')
-              .insert([{ 
-                text: title, 
-                image_url: image, 
-                order: 0, 
-                category_id: null 
-              }]);
+      const insertWithRetry = async (retries = 5, delay = 1000) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const payload = await createLink({
+              method: 'create',
+              id: generateId(),
+              url,
+              text: url,
+              category,
+              createdAt: new Date().toISOString()
+            });
+            if (!payload) {
+              throw new Error('Empty response');
+            }
+            return payload;
+          } catch (error) {
+            if (i === retries - 1) {
+              throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
           }
-
-          // Обновляем локальное состояние
-          setLinks(prev => prev.map(link => 
-            link.id === linkData[0].id ? { ...link, text: title } : link
-          ));
         }
-      } catch (metadataError) {
-        console.log('Не удалось получить метаданные:', metadataError);
-      }
+      };
 
-      setLinks(prev => [linkData[0], ...prev]);
+      const newLink = await insertWithRetry();
+      
+      setLinks(prev => [newLink, ...prev]);
       setUrl('');
+      setLoading(false);
+
+      fetchLinkPreview(url).then(previewData => {
+        if (previewData.text && previewData.text !== url) {
+          updateLink({
+            id: newLink.id,
+            patch: { text: previewData.text }
+          }).then(() => {
+            setLinks(prev => prev.map(link => 
+              link.id === newLink.id ? { ...link, text: previewData.text } : link
+            ));
+          }).catch(error => {
+            console.log('Не удалось обновить метаданные:', error);
+          });
+        }
+      }).catch(error => {
+        console.log('Не удалось получить метаданные:', error);
+      });
     } catch (error) {
       console.error('Ошибка сохранения ссылки:', error.message);
       setError('Не удалось сохранить ссылку');
-    } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteLink = async (id) => {
-    try {
-      const { error } = await supabase
-        .from('Links')
-        .delete()
-        .eq('id', id);
+    const deleteWithRetry = async (retries = 5, delay = 1000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await deleteLink(id);
+          return;
+        } catch (error) {
+          if (i === retries - 1) {
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+        }
+      }
+    };
 
-      if (error) throw error;
+    try {
+      await deleteWithRetry();
       setLinks(prev => prev.filter(link => link.id !== id));
     } catch (error) {
       console.error('Ошибка удаления ссылки:', error.message);
@@ -131,18 +153,41 @@ const LinkManager = () => {
   };
 
   const handleCategoryChange = async (id, newCategory) => {
-    try {
-      const { error } = await supabase
-        .from('Links')
-        .update({ category: newCategory })
-        .eq('id', id);
+    console.log('Changing category for id:', id, 'to:', newCategory);
+    const link = links.find(l => l.id === id);
+    console.log('Found link:', link);
+    
+    if (!link) {
+      console.error('Link not found with id:', id);
+      return;
+    }
 
-      if (error) throw error;
+    const updateWithRetry = async (retries = 5, delay = 1000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await updateLink({
+            id,
+            patch: { category: newCategory }
+          });
+          return;
+        } catch (error) {
+          console.error(`Update attempt ${i + 1} failed:`, error.message);
+          if (i === retries - 1) {
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+        }
+      }
+    };
+
+    try {
+      await updateWithRetry();
       setLinks(prev => prev.map(link => 
         link.id === id ? { ...link, category: newCategory } : link
       ));
     } catch (error) {
       console.error('Ошибка изменения категории:', error.message);
+      setError(`Не удалось изменить категорию: ${error.message}`);
     }
   };
 
