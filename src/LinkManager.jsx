@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchLinks, createLink, updateLink, deleteLink } from './api/linkService';
 import { fetchLinkPreview } from './utils/linkPreviewService';
 import LinkPreview from './components/LinkPreview';
+import NavigationMenu from './components/NavigationMenu';
 import styles from './css/LinkManager.module.css';
 
 const LinkManager = () => {
@@ -198,8 +199,10 @@ const LinkManager = () => {
   });
 
   return (
-    <div className={styles.container}>
-      <h1>Управление ссылками</h1>
+    <>
+      <NavigationMenu />
+      <div className={styles.container}>
+        <h1>Управление ссылками</h1>
       <div className={styles.form}>
         <input
           type="text"
@@ -293,6 +296,7 @@ const LinkManager = () => {
         ))}
       </div>
     </div>
+    </>
   );
 };
 

@@ -54,6 +54,7 @@ const UnrankedElementsSection = ({ elements, links, onDrop, onMove, onSaveOrder 
             id={element.id}
             imageUrl={element.image_url}
             text={element.text}
+            url={element.url}
             index={index}
             moveItem={moveItem}
             category_id={null}

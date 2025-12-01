@@ -58,28 +58,34 @@ const TierListCategory = ({
   };
 
   return (
-    <div ref={drop} className="tier-category" style={{ backgroundColor: category.color }}>
+    <div ref={drop} className="tier-category">
       <div className="category-header">
-        <h2 className="category-text">{category.name}</h2>
-        <div className="category-actions">
-          <button className="edit-button" onClick={() => onEdit(category)}>✏️</button>
-          <button className="delete-button" onClick={() => onDelete(category.id)}>🗑️</button>
-          <button className="move-button" onClick={() => onMoveUp(category.id)}>⬆️</button>
-          <button className="move-button" onClick={() => onMoveDown(category.id)}>⬇️</button>
+        <h2 className="category-text" style={{ backgroundColor: category.color }}>{category.name}</h2>
+        <div className="category-content">
+          <div className="tier-items">
+            {currentItems.map((item, index) => (
+              <DraggableImage
+                key={item.id}
+                id={item.id}
+                imageUrl={item.image_url}
+                text={item.text}
+                url={item.url}
+                index={index}
+                moveItem={moveItem}
+                category_id={item.category_id}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="tier-items">
-        {currentItems.map((item, index) => (
-          <DraggableImage
-            key={item.id}
-            id={item.id}
-            imageUrl={item.image_url}
-            text={item.text}
-            index={index}
-            moveItem={moveItem}
-            category_id={item.category_id}
-          />
-        ))}
+        <div className="category-actions" style={{ backgroundColor: category.color }}>
+          <button className="settings-button" onClick={() => onEdit(category)} title="Настройки">
+            ⚙️
+          </button>
+          <div className="move-buttons">
+            <button className="move-button" onClick={() => onMoveUp(category.id)} title="Вверх">⬆️</button>
+            <button className="move-button" onClick={() => onMoveDown(category.id)} title="Вниз">⬇️</button>
+          </div>
+        </div>
       </div>
     </div>
   );

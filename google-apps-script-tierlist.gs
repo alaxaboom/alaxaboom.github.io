@@ -266,6 +266,11 @@ function handleCategoriesRequest(e, method) {
       return errorResponse(400, 'Invalid patch JSON: ' + error.toString());
     }
 
+    // Убеждаемся, что order всегда число
+    if (patch.order !== undefined) {
+      patch.order = Number(patch.order);
+    }
+
     categories[idx] = { ...categories[idx], ...patch };
     writeFile(FILE_NAME_CATEGORIES, categories);
     return successResponse(200, categories[idx]);
@@ -419,6 +424,43 @@ function handleTierListItemsRequest(e, method) {
     }
     writeFile(FILE_NAME_TIER_LIST_ITEMS, filtered);
     return successResponse(204, null);
+  }
+
+  if (method === 'updateorder') {
+    if (!e.parameter.category_id && e.parameter.category_id !== '') return errorResponse(400, 'Missing category_id');
+    if (!e.parameter.orders) return errorResponse(400, 'Missing orders');
+    
+    let orders;
+    try {
+      orders = JSON.parse(e.parameter.orders);
+    } catch (error) {
+      return errorResponse(400, 'Invalid orders JSON: ' + error.toString());
+    }
+    
+    const categoryId = e.parameter.category_id === '' ? null : String(e.parameter.category_id);
+    let updatedCount = 0;
+    
+    // Обновляем order для всех элементов в категории
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemCategoryId = item.category_id === null ? null : String(item.category_id);
+      
+      // Проверяем, относится ли элемент к нужной категории
+      if (itemCategoryId === categoryId) {
+        const itemId = String(item.id);
+        if (orders.hasOwnProperty(itemId)) {
+          items[i].order = Number(orders[itemId]);
+          updatedCount++;
+        }
+      }
+    }
+    
+    if (updatedCount === 0) {
+      return errorResponse(404, 'No items found in category to update');
+    }
+    
+    writeFile(FILE_NAME_TIER_LIST_ITEMS, items);
+    return successResponse(200, { updated: updatedCount });
   }
 
   return errorResponse(400, 'Unsupported method: ' + method);

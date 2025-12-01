@@ -1,3 +1,5 @@
+import { getCachedData, setCachedData, clearCache } from '../utils/cacheService';
+
 const API_URL = process.env.REACT_APP_LINKS_API_URL;
 const API_KEY = process.env.REACT_APP_LINKS_API_KEY || '';
 
@@ -38,7 +40,14 @@ const withKey = (payload = {}) => {
   return { ...payload, key: API_KEY };
 };
 
-export const fetchTierListItems = async () => {
+export const fetchTierListItems = async (useCache = true) => {
+  if (useCache) {
+    const cached = getCachedData('tierListItems');
+    if (cached) {
+      return cached;
+    }
+  }
+
   if (!API_URL) {
     throw new Error('REACT_APP_LINKS_API_URL is not configured');
   }
@@ -46,7 +55,11 @@ export const fetchTierListItems = async () => {
   const response = await fetch(url, {
     method: 'GET',
   });
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  if (data) {
+    setCachedData('tierListItems', data);
+  }
+  return data;
 };
 
 export const createTierListItem = async (payload) => {
@@ -85,7 +98,9 @@ export const createTierListItem = async (payload) => {
     const response = await fetch(`${API_URL}?${params.toString()}`, {
       method: 'GET',
     });
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    clearCache('tierListItems');
+    return result;
   } catch (error) {
     console.error('Fetch error:', error);
     throw error;
@@ -98,5 +113,36 @@ export const updateTierListItem = async (payload) => {
 
 export const deleteTierListItem = async (id) => {
   return createTierListItem({ method: 'delete', id });
+};
+
+export const updateOrderBatch = async (categoryId, orders) => {
+  if (!API_URL) {
+    throw new Error('REACT_APP_LINKS_API_URL is not configured');
+  }
+  
+  const data = withKey({
+    method: 'updateOrder',
+    category_id: categoryId,
+    orders: orders
+  });
+  
+  const params = new URLSearchParams();
+  params.append('key', API_KEY || '');
+  params.append('type', 'tierlistitems');
+  params.append('method', 'updateOrder');
+  params.append('category_id', categoryId !== null && categoryId !== undefined ? String(categoryId) : '');
+  params.append('orders', JSON.stringify(orders));
+  
+  try {
+    const response = await fetch(`${API_URL}?${params.toString()}`, {
+      method: 'GET',
+    });
+    const result = await handleResponse(response);
+    clearCache('tierListItems');
+    return result;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
 };
 

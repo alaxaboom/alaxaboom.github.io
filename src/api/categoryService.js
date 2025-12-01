@@ -1,3 +1,5 @@
+import { getCachedData, setCachedData, clearCache } from '../utils/cacheService';
+
 const API_URL = process.env.REACT_APP_LINKS_API_URL;
 const API_KEY = process.env.REACT_APP_LINKS_API_KEY || '';
 
@@ -38,7 +40,14 @@ const withKey = (payload = {}) => {
   return { ...payload, key: API_KEY };
 };
 
-export const fetchCategories = async () => {
+export const fetchCategories = async (useCache = true) => {
+  if (useCache) {
+    const cached = getCachedData('categories');
+    if (cached) {
+      return cached;
+    }
+  }
+
   if (!API_URL) {
     throw new Error('REACT_APP_LINKS_API_URL is not configured');
   }
@@ -46,7 +55,11 @@ export const fetchCategories = async () => {
   const response = await fetch(url, {
     method: 'GET',
   });
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  if (data) {
+    setCachedData('categories', data);
+  }
+  return data;
 };
 
 export const createCategory = async (payload) => {
@@ -85,7 +98,9 @@ export const createCategory = async (payload) => {
     const response = await fetch(`${API_URL}?${params.toString()}`, {
       method: 'GET',
     });
-    return handleResponse(response);
+    const result = await handleResponse(response);
+    clearCache('categories');
+    return result;
   } catch (error) {
     console.error('Fetch error:', error);
     throw error;

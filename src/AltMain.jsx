@@ -34,9 +34,6 @@ const AltMain = () => {
         <button onClick={() => navigate('/tierlist')} className="main-button">
           Перейти к тирлисту
         </button>
-        <button onClick={() => navigate('/create')} className="main-button">
-          Создать новый элемент
-        </button>
         <button onClick={() => navigate('/links')} className="main-button">
           Управление ссылками
         </button>

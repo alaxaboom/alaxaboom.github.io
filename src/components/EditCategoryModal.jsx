@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
 import '../css/EditCategoryModal.css';
 
-const EditCategoryModal = ({ category, onClose, onSave, categories }) => {
+const PREDEFINED_COLORS = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+  '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#AED6F1'
+];
+
+const EditCategoryModal = ({ category, onClose, onSave, onDelete, categories }) => {
   const [name, setName] = useState(category.name);
-  const [color, setColor] = useState(category.color);
-  const [order, setOrder] = useState(category.order);
+  const [selectedColor, setSelectedColor] = useState(category.color);
 
   const handleSave = () => {
-    onSave({ ...category, name, color, order: Number(order) });
+    onSave({ ...category, name, color: selectedColor });
     onClose();
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Вы уверены, что хотите удалить эту категорию?')) {
+      onDelete(category.id);
+      onClose();
+    }
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>Редактировать категорию</h2>
         <div className="form-group">
           <label>Название:</label>
@@ -21,29 +32,28 @@ const EditCategoryModal = ({ category, onClose, onSave, categories }) => {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="category-name-input"
           />
         </div>
         <div className="form-group">
           <label>Цвет:</label>
-          <input
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Порядок:</label>
-          <input
-            type="number"
-            min="0"
-            max={categories ? categories.length - 1 : 0}
-            value={order}
-            onChange={(e) => setOrder(e.target.value)}
-          />
+          <div className="color-picker">
+            <div className="color-options">
+              {PREDEFINED_COLORS.map((color, index) => (
+                <button
+                  key={index}
+                  className={`color-option ${selectedColor === color ? 'selected' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
         <div className="modal-actions">
-          <button onClick={handleSave}>Сохранить</button>
-          <button onClick={onClose}>Отмена</button>
+          <button onClick={handleSave} className="save-button">Сохранить</button>
+          <button onClick={handleDelete} className="delete-button">Удалить</button>
+          <button onClick={onClose} className="cancel-button">Отмена</button>
         </div>
       </div>
     </div>

@@ -5,12 +5,12 @@ import TierListCategory from './components/TierListCategory';
 import UnrankedElementsSection from './components/UnrankedElementsSection';
 import CategoryManager from './components/CategoryManager';
 import EditCategoryModal from './components/EditCategoryModal';
-import TrashBin from './components/TrashBin';
 import CustomDragLayer from './components/CustomDragLayer';
+import NavigationMenu from './components/NavigationMenu';
+import LoadingSpinner from './components/LoadingSpinner';
 import { fetchCategories, updateCategory, deleteCategory } from './api/categoryService';
-import { fetchTierListItems, updateTierListItem, deleteTierListItem, createTierListItem } from './api/tierListItemService';
+import { fetchTierListItems, updateTierListItem, createTierListItem, updateOrderBatch } from './api/tierListItemService';
 import { fetchLinks } from './api/linkService';
-import { fetchLinkPreview } from './utils/linkPreviewService';
 import './css/TierList.css';
 
 const TierList = () => {
@@ -19,17 +19,22 @@ const TierList = () => {
   const [tierList, setTierList] = useState({});
   const [editingCategory, setEditingCategory] = useState(null);
   const [links, setLinks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const categoriesInitialized = useRef(false);
-  const lastCategoriesLength = useRef(0);
+  const lastCategoriesLength = useRef(-1);
+  const saveOrderTimeoutRef = useRef({});
 
   const fetchAllElements = useCallback(async (categoriesToUse) => {
+    if (categoriesToUse.length === 0) {
+      return;
+    }
     try {
-      const linksData = await fetchLinks();
+      const linksData = await fetchLinks(true);
       setLinks(linksData);
 
       const eligibleLinks = linksData.filter(link => link.category !== 'not_passed');
       
-      let items = await fetchTierListItems();
+      let items = await fetchTierListItems(true);
       const existingLinkIds = new Set(items.map(item => String(item.link_id).trim()));
       const linksToCreate = eligibleLinks.filter(link => {
         const linkId = String(link.id).trim();
@@ -67,7 +72,7 @@ const TierList = () => {
         }
         
         // Перезагружаем элементы после создания
-        items = await fetchTierListItems();
+        items = await fetchTierListItems(false);
       }
 
       // Объединяем данные из tierListItems с данными из links
@@ -102,21 +107,11 @@ const TierList = () => {
         };
       }).filter(Boolean);
 
-      // Логируем загруженные элементы с их order
-      console.log('Загруженные элементы из БД:', itemsWithLinkData.map(item => ({ 
-        id: item.id, 
-        category_id: item.category_id, 
-        order: item.order 
-      })));
-
       const categorizedElements = {};
       categoriesToUse.forEach(category => {
         const categoryItems = itemsWithLinkData
           .filter(item => item.category_id === category.id)
           .sort((a, b) => (a.order || 0) - (b.order || 0));
-        
-        console.log(`Элементы категории ${category.id} после сортировки:`, 
-          categoryItems.map(item => ({ id: item.id, order: item.order })));
         
         categorizedElements[category.id] = categoryItems;
       });
@@ -134,15 +129,29 @@ const TierList = () => {
   }, []);
 
   useEffect(() => {
-    if (categories.length > 0 && categories.length !== lastCategoriesLength.current) {
-      lastCategoriesLength.current = categories.length;
-      if (!categoriesInitialized.current) {
-        initializeTierList(categories);
-        categoriesInitialized.current = true;
+    const loadAllData = async () => {
+      setIsLoading(true);
+      try {
+        const categoriesData = await fetchCategories(true);
+        setCategories(categoriesData);
+        
+        if (categoriesData.length > 0) {
+          lastCategoriesLength.current = categoriesData.length;
+          if (!categoriesInitialized.current) {
+            initializeTierList(categoriesData);
+            categoriesInitialized.current = true;
+          }
+          await fetchAllElements(categoriesData);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки данных:', error.message);
+      } finally {
+        setIsLoading(false);
       }
-      fetchAllElements(categories);
-    }
-  }, [categories, fetchAllElements]);
+    };
+
+    loadAllData();
+  }, [fetchAllElements]);
 
   const initializeTierList = (categories) => {
     const initialTierList = {};
@@ -154,6 +163,59 @@ const TierList = () => {
 
 
   const handleDrop = async (item, categoryId) => {
+    // Создаем обновленный элемент с сохранением всех данных (включая картинку)
+    const updatedItem = { 
+      ...item, 
+      category_id: categoryId,
+      // Убеждаемся, что все данные сохраняются
+      image_url: item.image_url || item.imageUrl,
+      text: item.text,
+      url: item.url
+    };
+
+    // Сохраняем текущее состояние для сохранения порядка
+    let oldCategoryItems = [];
+    let newCategoryItems = [];
+
+    // Сначала обновляем визуальное состояние сразу для быстрого отклика
+    if (categoryId === null) {
+      // Перемещаем в неопределенные элементы
+      setTierList(prev => {
+        const updated = {...prev};
+        if (item.category_id) {
+          oldCategoryItems = updated[item.category_id]?.filter(el => el.id !== item.id) || [];
+          updated[item.category_id] = oldCategoryItems;
+        }
+        return updated;
+      });
+
+      setUnrankedElements(prev => {
+        newCategoryItems = [...prev.filter(el => el.id !== item.id), updatedItem];
+        return newCategoryItems;
+      });
+    } else {
+      // Обычное перемещение между категориями
+      setTierList(prev => {
+        const updated = {...prev};
+        
+        // Удаляем из старой категории
+        if (item.category_id) {
+          oldCategoryItems = updated[item.category_id]?.filter(el => el.id !== item.id) || [];
+          updated[item.category_id] = oldCategoryItems;
+        }
+        
+        // Добавляем в новую категорию в конец
+        newCategoryItems = [...(updated[categoryId] || []), updatedItem];
+        updated[categoryId] = newCategoryItems;
+        
+        return updated;
+      });
+
+      // Удаляем из неопределенных элементов, если был там
+      setUnrankedElements(prev => prev.filter(el => el.id !== item.id));
+    }
+
+    // Теперь сохраняем в БД асинхронно (не блокируем визуальное обновление)
     try {
       // Обновляем category_id в базе данных
       await updateTierListItem({
@@ -161,55 +223,22 @@ const TierList = () => {
         patch: { category_id: categoryId }
       });
 
-      const updatedItem = { ...item, category_id: categoryId };
-
+      // Сохраняем порядок для обеих категорий
       if (categoryId === null) {
-        // Перемещаем в неопределенные элементы
-        setTierList(prev => {
-          const updated = {...prev};
-          if (item.category_id) {
-            updated[item.category_id] = updated[item.category_id].filter(el => el.id !== item.id);
-            // Сохраняем порядок старой категории
-            saveOrderToDatabase(item.category_id, updated[item.category_id]);
-          }
-          return updated;
-        });
-
-        setUnrankedElements(prev => {
-          const updated = [...prev.filter(el => el.id !== item.id), updatedItem];
-          // Сохраняем порядок в базу данных
-          saveOrderToDatabase(null, updated);
-          return updated;
-        });
+        // Сохраняем порядок неопределенных элементов
+        if (newCategoryItems.length > 0) {
+          saveOrderToDatabase(null, newCategoryItems);
+        }
       } else {
-        // Обычное перемещение между категориями
-        setTierList(prev => {
-          const updated = {...prev};
-          
-          // Удаляем из старой категории
-          if (item.category_id) {
-            updated[item.category_id] = updated[item.category_id].filter(el => el.id !== item.id);
-            // Сохраняем порядок старой категории
-            saveOrderToDatabase(item.category_id, updated[item.category_id]);
-          }
-          
-          // Добавляем в новую категорию
-          updated[categoryId] = [...(updated[categoryId] || []), updatedItem];
-          // Сохраняем порядок новой категории
-          saveOrderToDatabase(categoryId, updated[categoryId]);
-          
-          return updated;
-        });
+        // Сохраняем порядок новой категории
+        if (newCategoryItems.length > 0) {
+          saveOrderToDatabase(categoryId, newCategoryItems);
+        }
+      }
 
-        // Удаляем из неопределенных элементов, если был там
-        setUnrankedElements(prev => {
-          const updated = prev.filter(el => el.id !== item.id);
-          // Сохраняем порядок неопределенных элементов
-          if (updated.length > 0) {
-            saveOrderToDatabase(null, updated);
-          }
-          return updated;
-        });
+      // Сохраняем порядок старой категории, если элемент был в категории
+      if (item.category_id && oldCategoryItems.length > 0) {
+        saveOrderToDatabase(item.category_id, oldCategoryItems);
       }
     } catch (error) {
       console.error('Ошибка при перемещении элемента:', error.message);
@@ -228,63 +257,38 @@ const TierList = () => {
     }
   };
 
-  // Отдельная функция для сохранения порядка в базу данных
+  // Отдельная функция для сохранения порядка в базу данных с debounce
   const saveOrderToDatabase = async (categoryId, items) => {
     if (!items || items.length === 0) {
       console.warn('saveOrderToDatabase: пустой список элементов');
       return;
     }
     
-    console.log(`Сохранение порядка для категории ${categoryId}:`, items.map((item, idx) => ({ id: item.id, order: idx })));
+    const categoryKey = categoryId !== null ? String(categoryId) : 'null';
     
-    try {
-      // Обновляем порядок последовательно, чтобы избежать race conditions
-      for (let index = 0; index < items.length; index++) {
-        const item = items[index];
-        try {
-          const result = await updateTierListItem({
-            id: item.id,
-            patch: { order: Number(index) } // Убеждаемся, что order - число
-          });
-          console.log(`Успешно обновлен порядок элемента ${item.id} на ${index}`);
-          
-          // Небольшая задержка между обновлениями для стабильности
-          if (index < items.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-        } catch (error) {
-          // Если ошибка "not found", это не критично - элемент мог быть удален
-          if (error.message && error.message.includes('not found')) {
-            console.warn(`Элемент ${item.id} не найден в базе данных:`, error.message);
-          } else {
-            // Для других ошибок логируем
-            console.error(`Ошибка обновления порядка для элемента ${item.id}:`, error);
-          }
-        }
+    // Очищаем предыдущий таймаут для этой категории
+    if (saveOrderTimeoutRef.current[categoryKey]) {
+      clearTimeout(saveOrderTimeoutRef.current[categoryKey]);
+    }
+    
+    // Создаем объект с парами id: order
+    const orders = {};
+    items.forEach((item, index) => {
+      orders[item.id] = Number(index);
+    });
+    
+    // Устанавливаем новый таймаут с debounce (300ms)
+    saveOrderTimeoutRef.current[categoryKey] = setTimeout(async () => {
+      try {
+        console.log(`Сохранение порядка для категории ${categoryId}:`, orders);
+        await updateOrderBatch(categoryId, orders);
+        console.log(`Порядок для категории ${categoryId} успешно сохранен`);
+        delete saveOrderTimeoutRef.current[categoryKey];
+      } catch (error) {
+        console.error('Ошибка обновления порядка:', error);
+        delete saveOrderTimeoutRef.current[categoryKey];
       }
-      
-      console.log(`Порядок для категории ${categoryId} успешно сохранен`);
-    } catch (error) {
-      console.error('Ошибка обновления порядка:', error);
-    }
-  };
-
-  const handleDeleteItem = async (itemId) => {
-    try {
-      await deleteTierListItem(itemId);
-
-      setTierList(prev => {
-        const updated = {...prev};
-        for (const categoryId in updated) {
-          updated[categoryId] = updated[categoryId].filter(item => item.id !== itemId);
-        }
-        return updated;
-      });
-
-      setUnrankedElements(prev => prev.filter(item => item.id !== itemId));
-    } catch (error) {
-      console.error('Ошибка удаления элемента:', error.message);
-    }
+    }, 300);
   };
 
   const handleDeleteCategory = async (categoryId) => {
@@ -320,16 +324,15 @@ const TierList = () => {
       const newCategories = [...categories];
       [newCategories[index], newCategories[index - 1]] = [newCategories[index - 1], newCategories[index]];
 
-      await Promise.all([
+      // Обновляем order для всех категорий, начиная с новой позиции
+      const updatePromises = newCategories.map((cat, idx) => 
         updateCategory({
-          id: newCategories[index].id,
-          patch: { order: index }
-        }),
-        updateCategory({
-          id: newCategories[index - 1].id,
-          patch: { order: index - 1 }
+          id: cat.id,
+          patch: { order: idx }
         })
-      ]);
+      );
+
+      await Promise.all(updatePromises);
 
       setCategories(newCategories);
     }
@@ -341,16 +344,15 @@ const TierList = () => {
       const newCategories = [...categories];
       [newCategories[index], newCategories[index + 1]] = [newCategories[index + 1], newCategories[index]];
 
-      await Promise.all([
+      // Обновляем order для всех категорий, начиная с новой позиции
+      const updatePromises = newCategories.map((cat, idx) => 
         updateCategory({
-          id: newCategories[index].id,
-          patch: { order: index }
-        }),
-        updateCategory({
-          id: newCategories[index + 1].id,
-          patch: { order: index + 1 }
+          id: cat.id,
+          patch: { order: idx }
         })
-      ]);
+      );
+
+      await Promise.all(updatePromises);
 
       setCategories(newCategories);
     }
@@ -374,13 +376,16 @@ const TierList = () => {
     }
   };
 
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <DndProvider backend={HTML5Backend}>
+      <NavigationMenu />
       <div className="tier-list-container">
-        <h1>Тирлист</h1>
         <div className="header-section">
           <CategoryManager onCategoryUpdate={setCategories} />
-          <TrashBin onDrop={handleDeleteItem} />
         </div>
         
         <div className="tier-list">
@@ -417,6 +422,7 @@ const TierList = () => {
           categories={categories}
           onClose={() => setEditingCategory(null)}
           onSave={handleSaveCategory}
+          onDelete={handleDeleteCategory}
         />
       )}
     </DndProvider>

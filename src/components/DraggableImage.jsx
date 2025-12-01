@@ -1,12 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
+import ContextMenu from './ContextMenu';
 import '../css/DraggableImage.css';
 
-const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) => {
+const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id, url }) => {
   const ref = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isDraggingState, setIsDraggingState] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
 
   const [{ isDragging }, drag, preview] = useDrag({
     type: 'image',
@@ -53,14 +55,29 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
 
   drag(drop(ref));
 
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    if (url) {
+      setContextMenu({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleOpenLink = (linkUrl) => {
+    if (linkUrl) {
+      window.open(linkUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
-    <div 
-      ref={ref}
-      className={`draggable-image-container ${isDragging ? 'dragging' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ opacity: isDragging ? 0 : 1 }}
-    >
+    <>
+      <div 
+        ref={ref}
+        className={`draggable-image-container ${isDragging ? 'dragging' : ''}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onContextMenu={handleContextMenu}
+        style={{ opacity: isDragging ? 0 : 1 }}
+      >
       <div className="image-wrapper">
         {imageUrl ? (
           <img 
@@ -84,6 +101,16 @@ const DraggableImage = ({ id, imageUrl, text, index, moveItem, category_id }) =>
         )}
       </div>
     </div>
+    {contextMenu && (
+      <ContextMenu
+        x={contextMenu.x}
+        y={contextMenu.y}
+        url={url}
+        onClose={() => setContextMenu(null)}
+        onOpenLink={handleOpenLink}
+      />
+    )}
+    </>
   );
 };
 

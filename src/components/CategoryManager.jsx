@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchCategories, createCategory } from '../api/categoryService';
+import '../css/CategoryManager.css';
+
+const PREDEFINED_COLORS = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+  '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B88B', '#AED6F1'
+];
 
 const CategoryManager = ({ onCategoryUpdate }) => {
   const [categories, setCategories] = useState([]);
+  const [showModal, setShowModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryColor, setNewCategoryColor] = useState('#FFFFFF');
+  const [selectedColor, setSelectedColor] = useState(PREDEFINED_COLORS[0]);
 
   const loadCategories = useCallback(async () => {
     try {
-      const data = await fetchCategories();
+      const data = await fetchCategories(false);
       setCategories(data);
       onCategoryUpdate(data);
     } catch (error) {
@@ -32,13 +39,14 @@ const CategoryManager = ({ onCategoryUpdate }) => {
       const newCategory = await createCategory({
         method: 'create',
         name: newCategoryName,
-        color: newCategoryColor,
+        color: selectedColor,
         order
       });
 
       setCategories([...categories, newCategory]);
       setNewCategoryName('');
-      setNewCategoryColor('#FFFFFF');
+      setSelectedColor(PREDEFINED_COLORS[0]);
+      setShowModal(false);
       loadCategories();
     } catch (error) {
       console.error('Ошибка добавления категории:', error.message);
@@ -46,23 +54,43 @@ const CategoryManager = ({ onCategoryUpdate }) => {
   };
 
   return (
-    <div>
-      <h2>Управление категориями</h2>
-      <div>
-        <input
-          type="text"
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-          placeholder="Название категории"
-        />
-        <input
-          type="color"
-          value={newCategoryColor}
-          onChange={(e) => setNewCategoryColor(e.target.value)}
-        />
-        <button onClick={addCategory}>Добавить категорию</button>
-      </div>
-    </div>
+    <>
+      <button className="add-category-button" onClick={() => setShowModal(true)}>
+        Добавить категорию
+      </button>
+      
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Добавить категорию</h3>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Название категории"
+              className="category-name-input"
+            />
+            <div className="color-picker">
+              <p>Выберите цвет:</p>
+              <div className="color-options">
+                {PREDEFINED_COLORS.map((color, index) => (
+                  <button
+                    key={index}
+                    className={`color-option ${selectedColor === color ? 'selected' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setSelectedColor(color)}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button onClick={addCategory} className="save-button">Сохранить</button>
+              <button onClick={() => setShowModal(false)} className="cancel-button">Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
