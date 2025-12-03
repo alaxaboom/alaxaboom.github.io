@@ -2,57 +2,150 @@
     background-image: linear-gradient(to bottom right, #7A288A, #3498DB);
     background-size: 100% 100%;
     height: 100vh;
+    width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
     position: relative;
+    overflow: hidden;
   }
   
-  .secret-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    border-radius: 15px;
-    border: none;
-    background-color: #fff;
-    color: #333;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    font-size: 18px;
-    transition: transform 0.2s ease-in-out;
-  }
-  
-  .secret-button:hover {
-    transform: scale(1.1);
-  }
-  
-  .main-container h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .button-group {
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 300px;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
   }
   
-  .main-button {
-    padding: 15px 30px;
+  .modal-content {
+
+
     border-radius: 15px;
-    border: none;
-    background-color: #fff;
-    color: #333;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    font-size: 18px;
-    transition: transform 0.2s ease-in-out;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    min-width: 300px;
+    min-height: 150px;
   }
   
-  .main-button:hover {
-    transform: scale(1.05);
+  .modal-button {
+    width: 100%;
+    height: 100%;
+    padding: 80px;
+    border-radius: 10px;
+    border: none;
+    background-color: #7A288A;
+
+    cursor: pointer;
+    font-size: 24px;
+    transition: background-color 0.2s ease-in-out;
   }
+  
+  .modal-button:hover {
+    background-color: #3498DB;
+  }
+  
+  .welcome-text {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    font-weight: bold;
+    overflow: hidden;
+  }
+  
+  .letter {
+    position: absolute;
+    display: inline-block;
+    animation: 
+      rainbow 3s linear infinite,
+      bounce 2.5s ease-in-out infinite;
+    animation-delay: 
+      calc(var(--index) * 0.2s),
+      calc(var(--index) * 0.15s);
+    transform-origin: center center;
+    cursor: grab;
+    left: 50%;
+    top: 50%;
+    transform: 
+      translateX(calc(-50% + var(--x)))
+      translateY(calc(-50% + var(--y)))
+      rotate(var(--rotation));
+    user-select: none;
+    touch-action: none;
+  }
+  
+  .letter:active {
+    cursor: grabbing;
+  }
+  
+  .letter.dragging {
+    animation: rainbow 3s linear infinite;
+    animation-delay: calc(var(--index) * 0.2s);
+    z-index: 1000;
+  }
+  
+  .letter.moved {
+    animation: rainbow 3s linear infinite;
+    animation-delay: calc(var(--index) * 0.2s);
+  }
+  
+  .letter:hover:not(.dragging):not(.moved) {
+    animation: 
+      rainbow 3s linear infinite,
+      bounceHover 2.5s ease-in-out infinite;
+    animation-delay: 
+      calc(var(--index) * 0.2s),
+      calc(var(--index) * 0.15s);
+  }
+  
+  @keyframes rainbow {
+    0% { color: #ff0000; }
+    14% { color: #ff7f00; }
+    28% { color: #ffff00; }
+    42% { color: #00ff00; }
+    57% { color: #0000ff; }
+    71% { color: #4b0082; }
+    85% { color: #9400d3; }
+    100% { color: #ff0000; }
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: 
+        translateX(calc(-50% + var(--x)))
+        translateY(calc(-50% + var(--y) + 0px))
+        rotate(var(--rotation));
+    }
+    50% {
+      transform: 
+        translateX(calc(-50% + var(--x)))
+        translateY(calc(-50% + var(--y) - 30px))
+        rotate(var(--rotation));
+    }
+  }
+  
+  @keyframes bounceHover {
+    0%, 100% {
+      transform: 
+        translateX(calc(-50% + var(--x)))
+        translateY(calc(-50% + var(--y) - 30px))
+        rotate(var(--rotation));
+    }
+    50% {
+      transform: 
+        translateX(calc(-50% + var(--x)))
+        translateY(calc(-50% + var(--y) - 35px))
+        rotate(var(--rotation));
+    }
+  }
+  
