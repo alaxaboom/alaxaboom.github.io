@@ -1,102 +1,71 @@
-const PROXY_ENDPOINTS = [
+const ALL_PROXIES = [
   {
-    name: 'allorigins-get',
-    url: (targetUrl) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      const data = await response.json();
-      return data.contents;
-    }
-  },
-  {
-    name: 'allorigins-raw',
-    url: (targetUrl) => `https://allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      return await response.text();
-    }
-  },
-  {
-    name: 'corsproxy',
-    url: (targetUrl) => `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      return await response.text();
-    }
-  },
-  {
-    name: 'codetabs',
+    name: 'api-codetabs',
     url: (targetUrl) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
     parse: async (response) => {
       return await response.text();
-    }
+    },
+    returnsHtml: true
   },
   {
-    name: 'thingproxy',
-    url: (targetUrl) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      return await response.text();
-    }
-  },
-  {
-    name: 'cors-anywhere-heroku',
-    url: (targetUrl) => `https://cors-anywhere.herokuapp.com/${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      return await response.text();
-    }
-  },
-  {
-    name: 'yacdn',
+    name: 'allorigins-raw',
     url: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
     parse: async (response) => {
       return await response.text();
-    }
-  },
-  {
-    name: 'proxycurl',
-    url: (targetUrl) => `https://api.proxycurl.com/v1/proxy?url=${encodeURIComponent(targetUrl)}`,
-    parse: async (response) => {
-      return await response.text();
-    }
+    },
+    returnsHtml: true
   }
 ];
+
+const PROXY_ENDPOINTS = ALL_PROXIES;
 
 export const fetchLinkPreview = async (url) => {
   const cachedData = localStorage.getItem(`preview-${url}`);
   if (cachedData) {
-    return JSON.parse(cachedData);
+    const parsed = JSON.parse(cachedData);
+    if (parsed.image) {
+      return parsed;
+    }
   }
 
   for (const proxy of PROXY_ENDPOINTS) {
     try {
       const proxyUrl = proxy.url(url);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       let response;
-      if (proxy.name === 'allorigins-get') {
-        response = await fetch(proxyUrl);
-      } else {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        try {
-          response = await fetch(proxyUrl, {
-            method: 'GET',
-            headers: {
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-            },
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-        } catch (fetchError) {
-          clearTimeout(timeoutId);
-          if (fetchError.name === 'AbortError') {
-            console.log(`Proxy ${proxy.name} timeout`);
-          }
-          throw fetchError;
+      try {
+        response = await fetch(proxyUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          console.log(`Proxy ${proxy.name} timeout`);
         }
+        throw fetchError;
       }
 
       if (!response.ok) {
         continue;
       }
 
-      const html = await proxy.parse(response);
+      if (proxy.returnsHtml === false) {
+        const previewData = await proxy.parse(response, url);
+        if (!previewData || !previewData.image) {
+          continue;
+        }
+        localStorage.setItem(`preview-${url}`, JSON.stringify(previewData));
+        return previewData;
+      }
+
+      const html = await proxy.parse(response, url);
       if (!html) {
         continue;
       }
@@ -109,6 +78,10 @@ export const fetchLinkPreview = async (url) => {
                          doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || '';
       const image = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || 
                    doc.querySelector('meta[name="twitter:image"]')?.getAttribute('content') || '';
+
+      if (!image) {
+        continue;
+      }
 
       const previewData = {
         text: text || url,
@@ -136,4 +109,3 @@ export const fetchLinkPreview = async (url) => {
     url
   };
 };
-

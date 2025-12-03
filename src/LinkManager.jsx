@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchLinks, createLink, updateLink, deleteLink } from './api/linkService';
+import { fetchTierListItems, deleteTierListItem } from './api/tierListItemService';
 import { fetchLinkPreview } from './utils/linkPreviewService';
 import LinkPreview from './components/LinkPreview';
 import NavigationMenu from './components/NavigationMenu';

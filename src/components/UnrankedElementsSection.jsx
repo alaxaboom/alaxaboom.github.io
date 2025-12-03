@@ -44,6 +44,11 @@ const UnrankedElementsSection = ({ elements, links, onDrop, onMove, onSaveOrder 
     onMove(null, updatedItems);
   };
 
+  // Не показываем раздел, если нет элементов
+  if (!currentElements || currentElements.length === 0) {
+    return null;
+  }
+
   return (
     <div className="unranked-elements">
       <h2>Unranked Elements</h2>

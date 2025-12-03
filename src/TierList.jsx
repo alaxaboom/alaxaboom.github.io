@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { DndProvider } from 'react-dnd';
+import { DndProvider, useDragLayer } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import TierListCategory from './components/TierListCategory';
 import UnrankedElementsSection from './components/UnrankedElementsSection';
@@ -9,9 +9,90 @@ import CustomDragLayer from './components/CustomDragLayer';
 import NavigationMenu from './components/NavigationMenu';
 import LoadingSpinner from './components/LoadingSpinner';
 import { fetchCategories, updateCategory, deleteCategory } from './api/categoryService';
-import { fetchTierListItems, updateTierListItem, createTierListItem, updateOrderBatch } from './api/tierListItemService';
+import { clearCache } from './utils/cacheService';
+import { fetchTierListItems, updateTierListItem, createTierListItem, updateOrderBatch, deleteTierListItem } from './api/tierListItemService';
 import { fetchLinks } from './api/linkService';
+import { fetchLinkPreview } from './utils/linkPreviewService';
 import './css/TierList.css';
+
+// Компонент для отслеживания drag состояния и прокрутки
+const DragScrollHandler = () => {
+  const { isDragging } = useDragLayer((monitor) => ({
+    isDragging: monitor.isDragging(),
+  }));
+
+  useEffect(() => {
+    let scrollInterval = null;
+
+    const handleDragOver = (e) => {
+      if (!isDragging) return;
+
+      const threshold = 100;
+      const scrollSpeed = 15;
+      const { clientY, clientX } = e;
+      const { innerHeight, innerWidth } = window;
+
+      // Очищаем предыдущий интервал
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
+
+      // Прокрутка вниз
+      if (innerHeight - clientY < threshold) {
+        scrollInterval = setInterval(() => {
+          window.scrollBy(0, scrollSpeed);
+        }, 16);
+      }
+      // Прокрутка вверх
+      else if (clientY < threshold) {
+        scrollInterval = setInterval(() => {
+          window.scrollBy(0, -scrollSpeed);
+        }, 16);
+      }
+      // Прокрутка вправо
+      else if (innerWidth - clientX < threshold) {
+        scrollInterval = setInterval(() => {
+          window.scrollBy(scrollSpeed, 0);
+        }, 16);
+      }
+      // Прокрутка влево
+      else if (clientX < threshold) {
+        scrollInterval = setInterval(() => {
+          window.scrollBy(-scrollSpeed, 0);
+        }, 16);
+      }
+    };
+
+    // Разрешаем прокрутку колесиком во время drag
+    const handleWheel = (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.scrollBy({
+          top: e.deltaY,
+          left: e.deltaX,
+          behavior: 'auto'
+        });
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('dragover', handleDragOver);
+      document.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+    }
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('wheel', handleWheel, { capture: true });
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+      }
+    };
+  }, [isDragging]);
+
+  return null;
+};
 
 const TierList = () => {
   const [unrankedElements, setUnrankedElements] = useState([]);
@@ -75,6 +156,24 @@ const TierList = () => {
         items = await fetchTierListItems(false);
       }
 
+      // Удаляем элементы из тир-листа, если их категория стала "not_passed"
+      const itemsToDelete = items.filter(item => {
+        const link = linksData.find(l => String(l.id) === String(item.link_id));
+        return link && link.category === 'not_passed';
+      });
+
+      if (itemsToDelete.length > 0) {
+        for (const item of itemsToDelete) {
+          try {
+            await deleteTierListItem(item.id);
+          } catch (error) {
+            console.error(`Ошибка удаления tierListItem для link_id ${item.link_id}:`, error);
+          }
+        }
+        // Перезагружаем элементы после удаления
+        items = await fetchTierListItems(false);
+      }
+
       // Объединяем данные из tierListItems с данными из links
       const itemsWithLinkData = items.map((item) => {
         const link = linksData.find(l => String(l.id) === String(item.link_id));
@@ -89,10 +188,31 @@ const TierList = () => {
             const cachedData = localStorage.getItem(`preview-${link.url.trim()}`);
             if (cachedData) {
               const previewData = JSON.parse(cachedData);
-              imageUrl = previewData.image || '';
-              if (previewData.text && previewData.text !== link.url) {
-                text = previewData.text;
+              if (previewData.image) {
+                imageUrl = previewData.image;
+                if (previewData.text && previewData.text !== link.url) {
+                  text = previewData.text;
+                }
               }
+            }
+            
+            if (!imageUrl) {
+              fetchLinkPreview(link.url.trim()).then(previewData => {
+                if (previewData && previewData.image) {
+                  setTierList(prev => {
+                    const updated = { ...prev };
+                    Object.keys(updated).forEach(catId => {
+                      updated[catId] = updated[catId].map(el => 
+                        el.url === link.url ? { ...el, image_url: previewData.image, text: previewData.text || el.text } : el
+                      );
+                    });
+                    return updated;
+                  });
+                  setUnrankedElements(prev => prev.map(el => 
+                    el.url === link.url ? { ...el, image_url: previewData.image, text: previewData.text || el.text } : el
+                  ));
+                }
+              }).catch(() => {});
             }
           } catch (e) {
             // Игнорируем ошибки парсинга
@@ -133,7 +253,10 @@ const TierList = () => {
       setIsLoading(true);
       try {
         const categoriesData = await fetchCategories(true);
-        setCategories(categoriesData);
+        const sortedCategories = Array.isArray(categoriesData) 
+          ? categoriesData.sort((a, b) => (a.order || 0) - (b.order || 0))
+          : categoriesData;
+        setCategories(sortedCategories);
         
         if (categoriesData.length > 0) {
           lastCategoriesLength.current = categoriesData.length;
@@ -152,6 +275,7 @@ const TierList = () => {
 
     loadAllData();
   }, [fetchAllElements]);
+
 
   const initializeTierList = (categories) => {
     const initialTierList = {};
@@ -333,6 +457,7 @@ const TierList = () => {
       );
 
       await Promise.all(updatePromises);
+      clearCache('categories');
 
       setCategories(newCategories);
     }
@@ -353,6 +478,7 @@ const TierList = () => {
       );
 
       await Promise.all(updatePromises);
+      clearCache('categories');
 
       setCategories(newCategories);
     }
@@ -364,6 +490,7 @@ const TierList = () => {
         id: updatedCategory.id,
         patch: { name: updatedCategory.name, color: updatedCategory.color, order: updatedCategory.order }
       });
+      clearCache('categories');
 
       const updatedCategories = categories.map(cat => 
         cat.id === updatedCategory.id ? updatedCategory : cat
@@ -382,10 +509,13 @@ const TierList = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      <DragScrollHandler />
       <NavigationMenu />
       <div className="tier-list-container">
         <div className="header-section">
-          <CategoryManager onCategoryUpdate={setCategories} />
+          <div className="left-controls">
+            <CategoryManager onCategoryUpdate={setCategories} />
+          </div>
         </div>
         
         <div className="tier-list">

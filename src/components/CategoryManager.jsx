@@ -56,7 +56,7 @@ const CategoryManager = ({ onCategoryUpdate }) => {
   return (
     <>
       <button className="add-category-button" onClick={() => setShowModal(true)}>
-        Добавить категорию
+        <span className="plus-icon">+</span>
       </button>
       
       {showModal && (

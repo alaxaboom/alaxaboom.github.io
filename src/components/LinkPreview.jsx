@@ -4,17 +4,44 @@ import { fetchLinkPreview } from '../utils/linkPreviewService';
 
 const LinkPreview = ({ url }) => {
   const [previewData, setPreviewData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef(null);
   const imageRef = useRef(null);
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible && !previewData) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
+      }
+    };
+  }, [isVisible, previewData]);
+
+  useEffect(() => {
+    if (!isVisible || previewData) return;
+
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const previewData = await fetchLinkPreview(url);
-        setPreviewData(previewData);
-        setLoading(false);
+        const data = await fetchLinkPreview(url);
+        setPreviewData(data);
       } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
         setPreviewData({
@@ -24,12 +51,13 @@ const LinkPreview = ({ url }) => {
           url
         });
         setError('Не удалось загрузить предпросмотр ссылки.');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [url]);
+  }, [isVisible, url, previewData]);
 
   useEffect(() => {
     if (previewData?.image) {
@@ -57,32 +85,37 @@ const LinkPreview = ({ url }) => {
     }
   }, [previewData]);
 
-  if (loading) return <p>Загрузка...</p>;
-  if (error) return <p>{error}</p>;
-  if (!previewData) return <p>Не удалось получить данные для предпросмотра.</p>;
-
   return (
-    <div className={styles.preview}>
+    <div ref={containerRef} className={styles.preview}>
       <a href={url} target="_blank" rel="noopener noreferrer">
-        {previewData.image && (
-          <div className={styles.imageContainer}>
-            {imageLoaded ? (
-              <img
-                ref={imageRef}
-                src={previewData.image}
-                alt="Превью"
-                loading="lazy"
-                className={styles.image}
-              />
-            ) : (
-              <div className={styles.imagePlaceholder}>
-                Изображение не загружено
+        {loading && <p>Loading...</p>}
+        {error && <p>{error}</p>}
+        {previewData && (
+          <>
+            {previewData.image && (
+              <div className={styles.imageContainer}>
+                {imageLoaded ? (
+                  <img
+                    ref={imageRef}
+                    src={previewData.image}
+                    alt="Preview"
+                    loading="lazy"
+                    className={styles.image}
+                  />
+                ) : (
+                  <div className={styles.imagePlaceholder}>
+                    Image not loaded
+                  </div>
+                )}
               </div>
             )}
-          </div>
+            <h3 className={styles.text}>{previewData.text}</h3>
+            <p className={styles.description}>{previewData.description}</p>
+          </>
         )}
-        <h3 className={styles.text}>{previewData.text}</h3>
-        <p className={styles.description}>{previewData.description}</p>
+        {!previewData && !loading && !error && (
+          <h3 className={styles.text}>{url}</h3>
+        )}
       </a>
     </div>
   );

@@ -5,12 +5,15 @@
   display: flex;
   min-height: 150px;
   border: 2px solid #333;
+  box-sizing: border-box;
 }
 
 .category-header {
   display: flex;
   width: 100%;
   align-items: stretch;
+  min-height: 100%;
+  height: 100%;
 }
 
 .category-text {
@@ -28,7 +31,9 @@
   white-space: normal;
   line-height: 1.2;
   overflow: hidden;
-  display: block;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
 }
 
 .category-content {
@@ -54,6 +59,7 @@
   padding: 10px;
   border-left: 2px solid #333;
   width: 20px;
+  align-self: stretch;
 }
 
 .settings-button,

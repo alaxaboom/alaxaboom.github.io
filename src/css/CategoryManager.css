@@ -1,16 +1,30 @@
 .add-category-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
   border-radius: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px;
+  transition: background-color 0.2s;
 }
 
 .add-category-button:hover {
-  background-color: #45a049;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.plus-icon {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
 }
 
 .modal-overlay {
