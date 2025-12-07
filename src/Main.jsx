@@ -7,20 +7,18 @@ const Main = () => {
   const text = 'Добро пожаловать на мой сайт';
   const letters = text.split('');
   const totalLetters = letters.length;
-  const arcAngle = 80;
-  const radius = 800;
 
   const physicsConfig = {
-    friction: 0.999,
-    minThrowSpeed: 0.1,
+    friction: 0.95,
+    minThrowSpeed: 0.3,
   };
 
   const getInitialPosition = (index) => {
-    const normalizedIndex = index / (totalLetters - 1);
-    const angle = (normalizedIndex - 0.5) * arcAngle * (Math.PI / 180);
-    const x = Math.sin(angle) * radius;
-    const y = (1 - Math.cos(angle)) * radius;
-    const rotation = angle * (180 / Math.PI);
+    const letterSpacing = 50;
+    const startX = -(totalLetters * letterSpacing) / 2;
+    const x = startX + index * letterSpacing;
+    const y = -350;
+    const rotation = 0;
     return { x, y, rotation };
   };
 
@@ -85,7 +83,7 @@ const Main = () => {
         dragState.current.positions = [];
       }
       dragState.current.positions.push({ x: clampedX, y: clampedY, time: now });
-      if (dragState.current.positions.length > 5) {
+      if (dragState.current.positions.length > 10) {
         dragState.current.positions.shift();
       }
 
@@ -111,50 +109,76 @@ const Main = () => {
     const handleMouseUp = () => {
       if (dragState.current.letterIndex === null) return;
 
+      const letterIndex = dragState.current.letterIndex;
       let vx = 0;
       let vy = 0;
-      const baseSpeed = 15;
+      const minSpeed = 1;
 
       if (dragState.current.positions && dragState.current.positions.length >= 2) {
-        const last = dragState.current.positions[dragState.current.positions.length - 1];
-        const prev = dragState.current.positions[dragState.current.positions.length - 2];
+        const positions = dragState.current.positions;
+        const last = positions[positions.length - 1];
+        const prev = positions[positions.length - 2];
         const dt = last.time - prev.time;
         
-        if (dt > 0 && dt < 200) {
-          const fps = 60;
-          const frameTime = 1000 / fps;
+        if (dt > 0 && dt < 500) {
           const dx = last.x - prev.x;
           const dy = last.y - prev.y;
-          vx = (dx / dt) * frameTime;
-          vy = (dy / dt) * frameTime;
+          const speedMultiplier = 0.01;
+          vx = (dx / dt) * 1000 * speedMultiplier;
+          vy = (dy / dt) * 1000 * speedMultiplier;
         }
       }
 
       const speed = Math.sqrt(vx * vx + vy * vy);
-      if (speed < 1) {
-        vx = baseSpeed;
-        vy = baseSpeed;
-      } else {
-        const directionX = vx / speed;
-        const directionY = vy / speed;
-        vx = directionX * (speed + baseSpeed);
-        vy = directionY * (speed + baseSpeed);
+      
+      if (speed > 0) {
+        if (speed < minSpeed) {
+          const directionX = vx / speed;
+          const directionY = vy / speed;
+          vx = directionX * minSpeed;
+          vy = directionY * minSpeed;
+        }
+      } else if (dragState.current.positions && dragState.current.positions.length > 1) {
+        const positions = dragState.current.positions;
+        const last = positions[positions.length - 1];
+        const first = positions[0];
+        const dx = last.x - first.x;
+        const dy = last.y - first.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 2) {
+          const directionX = dx / distance;
+          const directionY = dy / distance;
+          vx = directionX * minSpeed;
+          vy = directionY * minSpeed;
+        }
       }
 
-      setLetterStates(prev => {
-        const newStates = [...prev];
-        const index = dragState.current.letterIndex;
-        if (index !== null) {
-          newStates[index] = {
-            ...newStates[index],
-            vx: vx,
-            vy: vy,
-            isDragging: false,
-            wasMoved: true
-          };
-        }
-        return newStates;
-      });
+      if (Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01) {
+        setLetterStates(prev => {
+          const newStates = [...prev];
+          if (letterIndex !== null && newStates[letterIndex]) {
+            newStates[letterIndex] = {
+              ...newStates[letterIndex],
+              vx: vx,
+              vy: vy,
+              isDragging: false,
+              wasMoved: true
+            };
+          }
+          return newStates;
+        });
+      } else {
+        setLetterStates(prev => {
+          const newStates = [...prev];
+          if (letterIndex !== null && newStates[letterIndex]) {
+            newStates[letterIndex] = {
+              ...newStates[letterIndex],
+              isDragging: false
+            };
+          }
+          return newStates;
+        });
+      }
 
       dragState.current.letterIndex = null;
       dragState.current.velocities = [];
@@ -172,8 +196,8 @@ const Main = () => {
 
   useEffect(() => {
     let animationId;
-    const friction = physicsConfig.friction;
-    const minSpeed = physicsConfig.minThrowSpeed;
+    const friction = 0.98;
+    const minSpeedThreshold = 0.3;
     
     const animate = () => {
       setLetterStates(prev => {
@@ -190,15 +214,16 @@ const Main = () => {
 
           let { x, y, vx, vy } = state;
 
-          if (state.wasMoved && (Math.abs(vx) > 0 || Math.abs(vy) > 0)) {
+          const hasVelocity = Math.abs(vx) > minSpeedThreshold || Math.abs(vy) > minSpeedThreshold;
+          if (hasVelocity) {
             x += vx;
             y += vy;
             
             vx *= friction;
             vy *= friction;
             
-            if (Math.abs(vx) < minSpeed) vx = 0;
-            if (Math.abs(vy) < minSpeed) vy = 0;
+            if (Math.abs(vx) < minSpeedThreshold) vx = 0;
+            if (Math.abs(vy) < minSpeedThreshold) vy = 0;
           }
 
           const bounceDamping = 0.8;

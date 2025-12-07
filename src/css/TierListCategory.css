@@ -6,6 +6,11 @@
   min-height: 150px;
   border: 2px solid #333;
   box-sizing: border-box;
+  transition: min-height 0.3s ease;
+}
+
+.tier-category.collapsed {
+  min-height: auto;
 }
 
 .category-header {
@@ -40,6 +45,12 @@
   flex: 1;
   padding: 10px;
   background-color: #666666;
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+  overflow: hidden;
+}
+
+.tier-category.collapsed .category-content {
+  display: none;
 }
 
 .tier-items {
@@ -54,12 +65,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   padding: 10px;
   border-left: 2px solid #333;
   width: 20px;
   align-self: stretch;
+}
+
+.collapse-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 5px;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.collapse-button:hover {
+  transform: scale(1.2);
 }
 
 .settings-button,

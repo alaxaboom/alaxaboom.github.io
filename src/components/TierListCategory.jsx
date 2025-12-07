@@ -15,6 +15,7 @@ const TierListCategory = ({
   onMoveDown,
 }) => {
   const [currentItems, setCurrentItems] = useState(items);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const currentItemsRef = useRef(items);
   const saveOrderTimeoutRef = useRef(null);
 
@@ -58,26 +59,35 @@ const TierListCategory = ({
   };
 
   return (
-    <div ref={drop} className="tier-category">
+    <div ref={drop} className={`tier-category ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="category-header">
         <h2 className="category-text" style={{ backgroundColor: category.color }}>{category.name}</h2>
-        <div className="category-content">
-          <div className="tier-items">
-            {currentItems.map((item, index) => (
-              <DraggableImage
-                key={item.id}
-                id={item.id}
-                imageUrl={item.image_url}
-                text={item.text}
-                url={item.url}
-                index={index}
-                moveItem={moveItem}
-                category_id={item.category_id}
-              />
-            ))}
+        {!isCollapsed && (
+          <div className="category-content">
+            <div className="tier-items">
+              {currentItems.map((item, index) => (
+                <DraggableImage
+                  key={item.id}
+                  id={item.id}
+                  imageUrl={item.image_url}
+                  text={item.text}
+                  url={item.url}
+                  index={index}
+                  moveItem={moveItem}
+                  category_id={item.category_id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className="category-actions" style={{ backgroundColor: category.color }}>
+          <button 
+            className="collapse-button" 
+            onClick={() => setIsCollapsed(!isCollapsed)} 
+            title={isCollapsed ? "Развернуть" : "Свернуть"}
+          >
+            {isCollapsed ? '▶' : '▼'}
+          </button>
           <button className="settings-button" onClick={() => onEdit(category)} title="Настройки">
             ⚙️
           </button>
